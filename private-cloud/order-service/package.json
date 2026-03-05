@@ -1,0 +1,17 @@
+{
+    "name": "order-service",
+    "version": "1.0.0",
+    "description": "Order Service",
+    "main": "src/server.js",
+    "scripts": {
+        "start": "node src/server.js",
+        "dev": "nodemon src/server.js"
+    },
+    "dependencies": {
+        "@supabase/supabase-js": "^2.39.3",
+        "amqplib": "^0.10.3",
+        "axios": "^1.6.8",
+        "dotenv": "^16.4.5",
+        "express": "^4.19.2"
+    }
+}

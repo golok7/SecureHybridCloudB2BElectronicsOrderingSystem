@@ -1,0 +1,313 @@
+📘 Frontend Implementation Document
+Secure Hybrid Cloud B2B Electronics Ordering System
+1️⃣ Frontend Overview
+🎯 Purpose
+
+The frontend application provides:
+
+Company registration & login
+
+Secure JWT-based authentication
+
+Order creation interface
+
+Order tracking dashboard
+
+Real-time order status monitoring
+
+It communicates only with the Public Cloud API and never directly with private services.
+
+2️⃣ Architecture Overview
+Frontend (React)
+        ↓
+Public API (Cloud Network)
+        ↓
+RabbitMQ
+        ↓
+Order Service → Payment → Inventory
+        ↓
+Supabase DB
+Key Principles:
+
+Frontend never accesses private network.
+
+All authentication handled via JWT.
+
+Order status updates pulled from backend via polling.
+
+Secure separation of concerns.
+
+3️⃣ Technology Stack
+Layer	Technology
+Framework	React (Vite or CRA)
+Routing	React Router
+HTTP Client	Axios
+State	React Context / useState
+Auth	JWT (stored in localStorage)
+UI	MUI / Tailwind / Custom CSS
+4️⃣ Folder Structure
+frontend/
+│
+├── src/
+│   ├── api/
+│   │   └── axios.js
+│   │
+│   ├── context/
+│   │   └── AuthContext.js
+│   │
+│   ├── pages/
+│   │   ├── Login.jsx
+│   │   ├── Register.jsx
+│   │   ├── Dashboard.jsx
+│   │   ├── CreateOrder.jsx
+│   │   └── Orders.jsx
+│   │
+│   ├── components/
+│   │   ├── Navbar.jsx
+│   │   ├── ProtectedRoute.jsx
+│   │   └── OrderCard.jsx
+│   │
+│   ├── App.jsx
+│   └── main.jsx
+5️⃣ Authentication Flow
+🔐 Login Process
+
+User enters email & password
+
+POST /login
+
+Backend returns:
+
+token
+user info
+
+Store token in localStorage
+
+Attach token to all future API requests
+
+Axios Setup
+import axios from "axios";
+
+const api = axios.create({
+  baseURL: "http://localhost:3000"
+});
+
+api.interceptors.request.use(config => {
+  const token = localStorage.getItem("token");
+  if (token) {
+    config.headers.Authorization = `Bearer ${token}`;
+  }
+  return config;
+});
+
+export default api;
+6️⃣ Pages Implementation
+🧾 Register Page
+
+Fields:
+
+Company Name
+
+Email
+
+Password
+
+API Call:
+
+POST /register
+
+After success → redirect to login.
+
+🔑 Login Page
+
+Fields:
+
+Email
+
+Password
+
+API:
+
+POST /login
+
+Store:
+
+localStorage.setItem("token", token)
+
+Redirect → Dashboard
+
+📊 Dashboard Page
+
+Displays:
+
+Company name
+
+Quick stats:
+
+Total orders
+
+Completed
+
+Pending
+
+Failed
+
+API:
+
+GET /orders
+📦 Create Order Page
+
+Form:
+
+Product dropdown
+
+Quantity input
+
+API:
+
+POST /create-order
+
+Body:
+
+{
+  "productId": "ROUTER-01",
+  "quantity": 2
+}
+
+After submit:
+
+Show "Order Received"
+
+Redirect to Orders page
+
+📋 Orders Page
+
+API:
+
+GET /orders
+
+Display each order:
+
+| Order ID | Product | Quantity | Status | Created |
+
+7️⃣ Order Status Mapping (UI)
+
+Map backend status to colored badges:
+
+Status	UI Color
+RECEIVED	Gray
+PAYMENT_PENDING	Yellow
+PAYMENT_FAILED	Red
+INVENTORY_PENDING	Orange
+INVENTORY_FAILED	Red
+COMPLETED	Green
+
+Example:
+
+const statusColor = {
+  RECEIVED: "gray",
+  PAYMENT_PENDING: "orange",
+  PAYMENT_FAILED: "red",
+  INVENTORY_PENDING: "blue",
+  INVENTORY_FAILED: "red",
+  COMPLETED: "green"
+};
+8️⃣ Real-Time Status Updates
+
+Since backend is async (RabbitMQ), frontend should:
+
+Option A — Polling (Simple & Practical)
+
+Every 5 seconds:
+
+useEffect(() => {
+  const interval = setInterval(() => {
+    fetchOrders();
+  }, 5000);
+
+  return () => clearInterval(interval);
+}, []);
+
+This ensures UI updates automatically when status changes.
+
+9️⃣ Security Considerations
+
+JWT stored in localStorage
+
+All private routes wrapped in ProtectedRoute
+
+Authorization header automatically attached
+
+No private cloud access from frontend
+
+CORS enabled in backend
+
+🔟 UX Improvements
+
+Recommended features:
+
+Loading spinner during API calls
+
+Success & error toast notifications
+
+Disable submit button while processing
+
+Confirmation modal before order submit
+
+Order filtering by status
+
+Pagination for large datasets
+
+1️⃣1️⃣ Network Security Model
+
+Frontend only communicates with:
+
+Public API (Port 3000)
+
+It has no knowledge of:
+
+Payment service
+
+Inventory service
+
+RabbitMQ
+
+Supabase directly
+
+This enforces:
+
+Zero Trust Network Principle
+
+1️⃣2️⃣ Deployment Strategy
+
+For production:
+
+Build React app:
+
+npm run build
+
+Serve static files via Nginx
+
+Use HTTPS (already configured)
+
+Environment-based API base URL
+
+1️⃣3️⃣ Full User Journey
+
+Company registers
+
+Logs in
+
+Creates order
+
+Order status shows RECEIVED
+
+Status updates to:
+
+PAYMENT_PENDING
+
+INVENTORY_PENDING
+
+COMPLETED
+
+Inventory updates in backend
