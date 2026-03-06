@@ -22,7 +22,8 @@ services:
       - SUPABASE_SECRET_KEY=${SUPABASE_SECRET_KEY}
       - JWT_SECRET=${JWT_SECRET}
     depends_on:
-      - rabbitmq
+      rabbitmq:
+        condition: service_healthy
     networks:
       - cloud_network
 
@@ -33,6 +34,12 @@ services:
     networks:
       - cloud_network
       - private_network
+    healthcheck:
+      test: ["CMD", "rabbitmq-diagnostics", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 20s
 
   order-service:
     build: ./private-cloud/order-service
@@ -43,9 +50,12 @@ services:
       - PAYMENT_SERVICE_URL=http://payment-service:4000
       - INVENTORY_SERVICE_URL=http://inventory-service:4001
     depends_on:
-      - rabbitmq
-      - payment-service
-      - inventory-service
+      rabbitmq:
+        condition: service_healthy
+      payment-service:
+        condition: service_started
+      inventory-service:
+        condition: service_started
     networks:
       - private_network
       - cloud_network
