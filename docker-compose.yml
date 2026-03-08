@@ -17,7 +17,7 @@ services:
     build: ./public-cloud
     environment:
       - PORT=3000
-      - RABBITMQ_URL=amqp://rabbitmq
+      - RABBITMQ_URL=amqp://admin:admin123@rabbitmq
       - SUPABASE_URL=${SUPABASE_URL}
       - SUPABASE_SECRET_KEY=${SUPABASE_SECRET_KEY}
       - JWT_SECRET=${JWT_SECRET}
@@ -30,7 +30,11 @@ services:
   rabbitmq:
     image: rabbitmq:3-management
     ports:
-      - "15672:15672"
+      - "5672:5672"
+      - "15672:15672" 
+    environment:
+      - RABBITMQ_DEFAULT_USER=admin
+      - RABBITMQ_DEFAULT_PASS=admin123
     networks:
       - cloud_network
       - private_network
@@ -44,7 +48,7 @@ services:
   order-service:
     build: ./private-cloud/order-service
     environment:
-      - RABBITMQ_URL=amqp://rabbitmq
+      - RABBITMQ_URL=amqp://admin:admin123@rabbitmq
       - SUPABASE_URL=${SUPABASE_URL}
       - SUPABASE_SECRET_KEY=${SUPABASE_SECRET_KEY}
       - PAYMENT_SERVICE_URL=http://payment-service:4000

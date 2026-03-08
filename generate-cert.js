@@ -11,7 +11,7 @@ cert.validity.notBefore = new Date();
 cert.validity.notAfter = new Date();
 cert.validity.notAfter.setFullYear(cert.validity.notBefore.getFullYear() + 1);
 
-const attrs = [{ name: 'commonName', value: 'localhost' }];
+const attrs = [{ name: 'commonName', value: '10.102.223.132' }];
 cert.setSubject(attrs);
 cert.setIssuer(attrs);
 
