@@ -12,6 +12,8 @@ const CreateOrder = () => {
     // In a real app, this might come from an API
     const availableProducts = [
         { id: 'ROUTER-01', name: 'Enterprise Router X1' },
+        { id: 'SWITCH-02', name: 'Managed Switch 02' },
+        { id: 'FIREWALL-03', name: 'Security Firewall 03' },
         { id: 'SWITCH-48', name: '48-Port Gigabit Switch' },
         { id: 'SERVER-BLADE', name: 'Server Blade v2' },
         { id: 'FIREWALL-PRO', name: 'Hardware Firewall Pro' },

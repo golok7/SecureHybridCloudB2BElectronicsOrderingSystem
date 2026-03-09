@@ -13,7 +13,12 @@ const port = process.env.PORT;
 
 const PRODUCT_PRICES = {
     "ROUTER-01": 100,
-    "SWITCH-01": 150
+    "SWITCH-01": 150,
+    "SWITCH-02": 150,
+    "FIREWALL-03": 250,
+    "SWITCH-48": 200,
+    "SERVER-BLADE": 500,
+    "FIREWALL-PRO": 300
 };
 
 app.post('/internal/process-payment', async (req, res) => {

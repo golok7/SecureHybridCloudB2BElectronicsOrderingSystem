@@ -26,5 +26,5 @@ services:
       - RABBITMQ_URL=amqp://admin:admin123@10.102.223.132:5672
       - SUPABASE_URL=${SUPABASE_URL}
       - SUPABASE_SECRET_KEY=${SUPABASE_SECRET_KEY}
-      - PAYMENT_SERVICE_URL=http://localhost:4000
-      - INVENTORY_SERVICE_URL=http://localhost:4001
+      - PAYMENT_SERVICE_URL=http://payment-service:4000
+      - INVENTORY_SERVICE_URL=http://inventory-service:4001

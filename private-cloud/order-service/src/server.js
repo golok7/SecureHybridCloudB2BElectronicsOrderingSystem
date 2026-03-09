@@ -30,7 +30,12 @@ const inventoryServiceUrl = process.env.INVENTORY_SERVICE_URL;
 
 const PRODUCT_PRICES = {
     "ROUTER-01": 100,
-    "SWITCH-01": 150
+    "SWITCH-01": 150,
+    "SWITCH-02": 150,
+    "FIREWALL-03": 250,
+    "SWITCH-48": 200,
+    "SERVER-BLADE": 500,
+    "FIREWALL-PRO": 300
 };
 
 /* -------------------- HELPERS -------------------- */
@@ -48,6 +53,37 @@ async function updateOrderStatus(orderId, status) {
     }
 }
 
+async function recoverStuckOrders(channel) {
+    console.log("Checking for stuck orders to recover...");
+    const { data: stuckOrders, error } = await supabase
+        .from('orders')
+        .select('*')
+        .in('status', ['RECEIVED', 'PAYMENT_PENDING', 'INVENTORY_PENDING']);
+
+    if (error) {
+        console.error("Failed to fetch stuck orders:", error.message);
+        return;
+    }
+
+    if (stuckOrders && stuckOrders.length > 0) {
+        console.log(`Found ${stuckOrders.length} stuck orders. Re-queuing...`);
+        for (const order of stuckOrders) {
+            channel.sendToQueue(
+                'order_queue',
+                Buffer.from(JSON.stringify({
+                    orderId: order.id,
+                    productId: order.product_id,
+                    quantity: order.quantity
+                })),
+                { persistent: true }
+            );
+            console.log(`Re-queued stuck order ${order.id}`);
+        }
+    } else {
+        console.log("No stuck orders found.");
+    }
+}
+
 /* -------------------- START CONSUMER -------------------- */
 
 const start = async () => {
@@ -56,6 +92,9 @@ const start = async () => {
         const channel = await connection.createChannel();
 
         await channel.assertQueue('order_queue', { durable: true });
+
+        // Recover any stuck orders from database
+        await recoverStuckOrders(channel);
 
         console.log("Order Service waiting for messages...");
 
